@@ -232,7 +232,7 @@ def delete_task():
 
     task_id = request.form.get('id')
     conn = conectar()
-    cur = conn.cursor()
+    cur = get_db_cursor(conn)
     reiniciar_si_toca(cur)
     cur.execute('DELETE FROM tareas WHERE id = %s', (task_id,))
     conn.commit()
@@ -282,7 +282,7 @@ def edit_task():
         return jsonify({"error": "El texto no puede estar vacío"}), 400
 
     conn = conectar()
-    cur = conn.cursor()
+    cur = get_db_cursor(conn)
     reiniciar_si_toca(cur)
     cur.execute('UPDATE tareas SET text = %s WHERE id = %s', (new_text.strip(), task_id))
     conn.commit()
