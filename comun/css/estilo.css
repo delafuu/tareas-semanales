@@ -1,0 +1,263 @@
+/* --- ESTILOS GENERALES Y RESETEO --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+    background-color: #F3F4F6;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+    min-height: 100vh;
+}
+
+.container {
+    background-color: #ffffff;
+    width: 100%;
+    max-width: 600px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    padding: 30px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 8px;
+    font-size: 28px;
+}
+
+/* --- CABECERA: REINICIO SEMANAL --- */
+.subtitulo {
+    text-align: center;
+    font-size: 14px;
+    color: #6B7280;
+    margin-bottom: 20px;
+}
+
+.aviso {
+    background-color: #EEF2FF;
+    color: #4338CA;
+    border: 1px solid #C7D2FE;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 18px;
+}
+
+.aviso.oculto {
+    display: none;
+}
+
+/* --- FORMULARIO DE ENTRADA --- */
+form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+#input-tarea {
+    flex: 1;
+    padding: 12px 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.btn-añadir {
+    background-color: #4F46E5;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-añadir:hover {
+    background-color: #4338CA;
+}
+
+/* --- LISTA DE TAREAS --- */
+ul {
+    list-style: none;
+}
+
+li {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+    gap: 10px;
+}
+
+li:last-child {
+    border-bottom: none;
+}
+
+.btn-marcar {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    border-radius: 50%;
+    border: 2px solid #4F46E5;
+    background: transparent;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-marcar.marcada {
+    background-color: #4F46E5;
+}
+
+.tarea-texto {
+    flex: 1;
+    font-size: 18px;
+    transition: color 0.2s;
+}
+
+.tarea-texto.completada {
+    text-decoration: line-through;
+    color: #888;
+}
+
+/* --- ESTILOS DE EDICIÓN (CONTENTEDITABLE) --- */
+.tarea-texto[contenteditable="true"] {
+    outline: none;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.tarea-texto[contenteditable="true"]:focus {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* --- BOTONES DE ACCIÓN (SUBIR/BAJAR/BORRAR) --- */
+.btn-accion {
+    background-color: #f1f1f1;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #555;
+}
+
+.btn-accion:hover {
+    background-color: #e5e5e5;
+}
+
+.btn-borrar {
+    color: #dc2626;
+}
+
+/* --- ADAPTACIÓN PARA MÓVILES (PWA) --- */
+@media (max-width: 600px) {
+    body {
+        padding: 15px 10px;
+    }
+
+    .container {
+        padding: 20px 15px;
+        border-radius: 16px;
+    }
+
+    h1 {
+        font-size: 26px;
+    }
+
+    #input-tarea {
+        font-size: 18px;
+        padding: 14px 15px;
+    }
+
+    .btn-añadir {
+        padding: 14px 20px;
+        font-size: 16px;
+    }
+
+    li span {
+        font-size: 18px;
+    }
+
+    .btn-marcar {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        font-size: 16px;
+    }
+
+    .btn-accion {
+        font-size: 16px;
+        padding: 10px 14px;
+    }
+}
+
+/* --- MODO OSCURO AUTOMÁTICO --- */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #121212;
+        color: #ffffff;
+    }
+
+    .container {
+        background-color: #1e1e1e;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+
+    h1 {
+        color: #ffffff;
+    }
+
+    .subtitulo {
+        color: #9CA3AF;
+    }
+
+    .aviso {
+        background-color: #1e1b4b;
+        border-color: #3730a3;
+        color: #c7d2fe;
+    }
+
+    #input-tarea {
+        background-color: #2c2c2c;
+        color: #ffffff;
+        border: 1px solid #444;
+    }
+
+    #input-tarea::placeholder {
+        color: #aaa;
+    }
+
+    li {
+        border-bottom: 1px solid #333;
+        color: #e0e0e0;
+    }
+
+    .btn-accion {
+        background-color: #333;
+        color: #ddd;
+    }
+
+    .btn-accion:hover {
+        background-color: #444;
+    }
+
+    .tarea-texto.completada {
+        color: #666;
+    }
+
+    .tarea-texto[contenteditable="true"]:focus {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+}

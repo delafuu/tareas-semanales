@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: tareas
+      POSTGRES_PASSWORD: tareas
+      POSTGRES_DB: tareas
+    ports:
+      - "5432:5432"
+    volumes:
+      - datos:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+      dockerfile: fetch/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://tareas:tareas@db:5432/tareas
+      ZONA_HORARIA: Europe/Madrid
+      DIA_REINICIO: "6"
+    ports:
+      - "7070:7070"
+    depends_on:
+      - db
+
+volumes:
+  datos:

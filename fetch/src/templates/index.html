@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Tareas semanales</title>
+
+    <!-- Enlaces para la PWA e iconos -->
+    <link rel="manifest" href="/comun/manifest.json?v=1">
+    <link rel="apple-touch-icon" href="/comun/img/icono.png?v=1">
+    <link rel="icon" type="image/png" href="/comun/img/icono.png?v=1">
+
+    <!-- Enlace al CSS -->
+    <link rel="stylesheet" href="/comun/css/estilo.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Mis Tareas</h1>
+        <p class="subtitulo">
+            Se desmarcan todas cada <strong id="dia-reinicio">domingo</strong>
+            <span id="proximo-reinicio"></span>
+        </p>
+
+        <div id="aviso-semana" class="aviso oculto">
+            🔄 Semana nueva: todas las tareas se han desmarcado.
+        </div>
+
+        <form id="formulario-tarea">
+            <input type="text" id="input-tarea" placeholder="¿Qué necesitas hacer esta semana?" autocomplete="off" required>
+            <button type="submit" class="btn-añadir">Añadir</button>
+        </form>
+
+        <ul id="lista-tareas"></ul>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarTareas();
+            cargarEstado();
+        });
+
+        // Cargar todas las tareas desde el servidor
+        function cargarTareas() {
+            fetch('/api/tasks')
+                .then(response => response.json())
+                .then(tareas => {
+                    // Si 'done' es false (pendiente), va arriba. Si es true (completada), va abajo.
+                    tareas.sort((a, b) => (a.done === b.done) ? 0 : a.done ? 1 : -1);
+
+                    const lista = document.getElementById('lista-tareas');
+                    lista.innerHTML = '';
+                    tareas.forEach(tarea => renderizarTarea(tarea));
+                });
+        }
+
+        // Información del reinicio semanal (día y próxima fecha)
+        function cargarEstado() {
+            fetch('/api/estado')
+                .then(response => response.json())
+                .then(estado => {
+                    document.getElementById('dia-reinicio').textContent = estado.dia_reinicio;
+
+                    if (estado.proximo_reinicio) {
+                        const fecha = new Date(estado.proximo_reinicio + 'T00:00:00');
+                        const formateada = fecha.toLocaleDateString('es-ES', {
+                            day: 'numeric', month: 'long'
+                        });
+                        document.getElementById('proximo-reinicio').textContent =
+                            '· Próximo reinicio: ' + formateada;
+                    }
+
+                    // Si hoy es el día del reinicio, avisamos de que la lista está limpia
+                    if (estado.ultimo_reinicio && estado.ultimo_reinicio === estado.hoy) {
+                        document.getElementById('aviso-semana').classList.remove('oculto');
+                    }
+                });
+        }
+
+        // Dibujar una tarea en el HTML
+        function renderizarTarea(tarea) {
+            const lista = document.getElementById('lista-tareas');
+            const li = document.createElement('li');
+            li.dataset.id = tarea.id;
+
+            // Botón de completado
+            const btnMarcar = document.createElement('button');
+            btnMarcar.className = 'btn-marcar';
+            btnMarcar.textContent = tarea.done ? '✓' : '';
+            if (tarea.done) btnMarcar.classList.add('marcada');
+            btnMarcar.onclick = () => alternarTarea(tarea.id);
+
+            // Texto de la tarea (editable)
+            const span = document.createElement('span');
+            span.className = 'tarea-texto';
+            if (tarea.done) span.classList.add('completada');
+            span.textContent = tarea.text;
+
+            span.contentEditable = "true";
+            span.addEventListener('blur', () => guardarEdicion(tarea.id, span));
+            span.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    span.blur();
+                }
+            });
+
+            // Botón subir
+            const btnSubir = document.createElement('button');
+            btnSubir.className = 'btn-accion';
+            btnSubir.textContent = '↑';
+            btnSubir.onclick = () => moverTarea(tarea.id, -1);
+
+            // Botón bajar
+            const btnBajar = document.createElement('button');
+            btnBajar.className = 'btn-accion';
+            btnBajar.textContent = '↓';
+            btnBajar.onclick = () => moverTarea(tarea.id, 1);
+
+            // Botón borrar
+            const btnBorrar = document.createElement('button');
+            btnBorrar.className = 'btn-accion btn-borrar';
+            btnBorrar.textContent = '✕';
+            btnBorrar.onclick = () => borrarTarea(tarea.id);
+
+            // Ensamblar el elemento
+            li.appendChild(btnMarcar);
+            li.appendChild(span);
+            li.appendChild(btnSubir);
+            li.appendChild(btnBajar);
+            li.appendChild(btnBorrar);
+
+            lista.appendChild(li);
+        }
+
+        // Añadir nueva tarea
+        document.getElementById('formulario-tarea').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const input = document.getElementById('input-tarea');
+            const texto = input.value.trim();
+            if (!texto) return;
+
+            const formData = new FormData();
+            formData.append('text', texto);
+
+            fetch('/api/tasks', { method: 'POST', body: formData })
+                .then(res => res.json())
+                .then(() => {
+                    input.value = '';
+                    cargarTareas(); // Recargamos y ordenamos la lista automáticamente
+                });
+        });
+
+        // Alternar estado completado
+        function alternarTarea(id) {
+            const formData = new FormData();
+            formData.append('id', id);
+            fetch('/api/toggle_task', { method: 'POST', body: formData })
+                .then(() => cargarTareas());
+        }
+
+        // Borrar tarea
+        function borrarTarea(id) {
+            const formData = new FormData();
+            formData.append('id', id);
+            fetch('/api/delete_task', { method: 'POST', body: formData })
+                .then(() => {
+                    const li = document.querySelector(`li[data-id="${id}"]`);
+                    if (li) li.remove();
+                });
+        }
+
+        // Mover tarea
+        function moverTarea(id, direccion) {
+            const lista = Array.from(document.getElementById('lista-tareas').children);
+            const index = lista.findIndex(li => li.dataset.id === id);
+            if (index === -1) return;
+
+            const nuevaPosicion = index + direccion;
+            if (nuevaPosicion < 0 || nuevaPosicion >= lista.length) return;
+
+            const formData = new FormData();
+            formData.append('id', id);
+            formData.append('position', nuevaPosicion);
+
+            fetch('/api/move_task', { method: 'POST', body: formData })
+                .then(() => cargarTareas());
+        }
+
+        // Guardar la edición de texto
+        function guardarEdicion(id, spanElement) {
+            const nuevoTexto = spanElement.textContent.trim();
+
+            if (nuevoTexto === "") {
+                cargarTareas();
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('id', id);
+            formData.append('text', nuevoTexto);
+
+            fetch('/api/edit_task', {
+                method: 'POST',
+                body: formData
+            });
+        }
+    </script>
+</body>
+</html>
