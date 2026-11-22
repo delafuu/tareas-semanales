@@ -6,6 +6,8 @@ Lista de tareas muy parecida a [delafuu/todo-list](https://github.com/delafuu/to
 Misma tecnología que el original: Flask + PostgreSQL + PWA (se puede instalar en el móvil), con modo oscuro
 automático y despliegue en Render mediante Docker.
 
+**En producción:** <https://tareas-semanales.onrender.com>
+
 ## Cómo funciona el reinicio semanal
 
 No hay ningún cron ni tarea programada. El reinicio es **perezoso**: se comprueba en cada petición a la API.
@@ -98,28 +100,34 @@ curl -X POST http://localhost:7070/api/reset
 
 ## Desplegar en Render
 
-1. Sube el repositorio a GitHub (ver abajo).
-2. En Render: **New → Blueprint** y selecciona el repo. `render.yaml` crea el servicio web y la base de datos.
+Ya está desplegado con el Blueprint de `render.yaml` (servicio web Docker + base de datos Postgres).
+Para recrearlo desde cero:
+
+1. En Render: **New → Blueprint** y selecciona el repo `delafuu/tareas-semanales`.
+2. Render lee `render.yaml` y crea el servicio web y la base de datos con `DATABASE_URL` ya enlazada.
 3. Si prefieres hacerlo a mano: **New → Web Service**, runtime **Docker**, Dockerfile `fetch/Dockerfile`,
    y añade la variable `DATABASE_URL` con la *Internal Database URL* de tu Postgres.
 
-## Crear el repositorio nuevo
+## Repositorio
 
-El proyecto ya está listo en la carpeta `tareas-semanales`. Para publicarlo:
+El proyecto está publicado en <https://github.com/delafuu/tareas-semanales>.
 
 ```bash
+git clone https://github.com/delafuu/tareas-semanales.git
 cd tareas-semanales
-git init -b main
-git add .
-git commit -m "Lista de tareas que se desmarca cada domingo"
-
-# Opción A: con GitHub CLI (crea el repo y sube en un paso)
-gh repo create tareas-semanales --public --source=. --push
-
-# Opción B: crea el repo vacío en github.com y luego
-git remote add origin https://github.com/TU_USUARIO/tareas-semanales.git
-git push -u origin main
 ```
 
-> Nota: en esta máquina no hay `git` instalado, así que esos comandos hay que ejecutarlos después de
-> instalar Git (<https://git-scm.com/downloads>) o subiendo los archivos desde la web de GitHub.
+Cualquier push a `main` redespliega automáticamente el servicio. Para cambiar el plan, la región o las
+variables del despliegue, edita `render.yaml` y Render lo aplicará en la siguiente sincronización del
+Blueprint.
+
+> El primer push necesitó autenticarse con `gh auth login` y `gh auth setup-git` para que Git usara las
+> credenciales de GitHub CLI.
+
+## Mantenimiento
+
+- El **Postgres gratuito de Render caduca a los 30 días**. Cuando llegue la fecha, hay que crear una base
+  nueva y actualizar `DATABASE_URL` (o pasar a un Postgres gratuito sin caducidad, como Neon).
+- El **servicio web gratuito se duerme** tras unos minutos sin uso: la primera visita tarda ~1 minuto.
+  El reinicio de los domingos no se ve afectado (se aplica en la siguiente visita).
+
