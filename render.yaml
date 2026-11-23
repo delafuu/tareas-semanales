@@ -10,10 +10,9 @@ services:
         value: Europe/Madrid
       - key: DIA_REINICIO
         value: "6"
+      # Se define en el panel de Render (no en el repo, que es público)
       - key: DATABASE_URL
-        fromDatabase:
-          name: tareas-db
-          property: connectionString
+        sync: false
 
 databases:
   - name: tareas-db
