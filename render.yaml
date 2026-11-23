@@ -3,6 +3,7 @@ services:
     name: tareas-semanales
     runtime: docker
     plan: free
+    region: frankfurt
     dockerfilePath: ./fetch/Dockerfile
     dockerContext: .
     envVars:
