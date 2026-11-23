@@ -10,10 +10,6 @@ services:
         value: Europe/Madrid
       - key: DIA_REINICIO
         value: "6"
-      # Se define en el panel de Render (no en el repo, que es público)
+      # Se define en el panel de Render (Neon, sin caducidad). No va en el repo porque es público.
       - key: DATABASE_URL
         sync: false
-
-databases:
-  - name: tareas-db
-    plan: free
