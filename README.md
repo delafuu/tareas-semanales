@@ -40,7 +40,7 @@ fetch/
     requirements.txt
     templates/index.html   Interfaz (JS sin dependencias)
 docker-compose.yml         Entorno local (Postgres + app)
-render.yaml                Blueprint de Render (web + base de datos)
+render.yaml                Blueprint de Render (servicio web)
 ```
 
 ## Probarlo en local
@@ -100,13 +100,15 @@ curl -X POST http://localhost:7070/api/reset
 
 ## Desplegar en Render
 
-Ya está desplegado con el Blueprint de `render.yaml` (servicio web Docker + base de datos Postgres).
-Para recrearlo desde cero:
+Ya está desplegado con el Blueprint de `render.yaml` (servicio web Docker) y una base de datos **Neon**
+externa. Para recrearlo desde cero:
 
 1. En Render: **New → Blueprint** y selecciona el repo `delafuu/tareas-semanales`.
-2. Render lee `render.yaml` y crea el servicio web y la base de datos con `DATABASE_URL` ya enlazada.
-3. Si prefieres hacerlo a mano: **New → Web Service**, runtime **Docker**, Dockerfile `fetch/Dockerfile`,
-   y añade la variable `DATABASE_URL` con la *Internal Database URL* de tu Postgres.
+2. Render lee `render.yaml` y crea solo el servicio web.
+3. En **Environment** del servicio, define `DATABASE_URL` con la cadena de conexión de Neon
+   (`postgresql://usuario:password@host/neondb?sslmode=require`). No se guarda en el repo porque es público.
+4. Si prefieres hacerlo a mano: **New → Web Service**, runtime **Docker**, Dockerfile `fetch/Dockerfile`,
+   y añade `DATABASE_URL` igual que en el paso 3.
 
 ## Repositorio
 
@@ -126,8 +128,10 @@ Blueprint.
 
 ## Mantenimiento
 
-- El **Postgres gratuito de Render caduca a los 30 días**. Cuando llegue la fecha, hay que crear una base
-  nueva y actualizar `DATABASE_URL` (o pasar a un Postgres gratuito sin caducidad, como Neon).
-- El **servicio web gratuito se duerme** tras unos minutos sin uso: la primera visita tarda ~1 minuto.
-  El reinicio de los domingos no se ve afectado (se aplica en la siguiente visita).
+- La base de datos está en **Neon** (plan gratuito, proyecto `tareas-semanales`, región Oregon). No caduca:
+  los datos se conservan indefinidamente. El cómputo se suspende tras unos minutos sin uso y se reactiva
+  solo en la siguiente consulta (menos de un segundo).
+- El **servicio web gratuito de Render se duerme** tras unos minutos sin uso: la primera visita tarda
+  ~1 minuto. El reinicio de los domingos no se ve afectado (se aplica en la siguiente visita).
+- `DATABASE_URL` se configura en el panel de Render (**Environment**), nunca en el repositorio.
 
