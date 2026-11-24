@@ -119,18 +119,21 @@ git clone https://github.com/delafuu/tareas-semanales.git
 cd tareas-semanales
 ```
 
-Cualquier push a `main` redespliega automáticamente el servicio. Para cambiar el plan, la región o las
-variables del despliegue, edita `render.yaml` y Render lo aplicará en la siguiente sincronización del
-Blueprint.
+Cualquier push a `main` redespliega automáticamente el servicio. Para cambiar el plan o las variables del
+despliegue, edita `render.yaml` y Render lo aplicará en la siguiente sincronización del Blueprint.
+
+La **región no se puede cambiar** en un servicio existente: hay que borrar el servicio y sincronizar el
+Blueprint para que lo recree en la región nueva.
 
 > El primer push necesitó autenticarse con `gh auth login` y `gh auth setup-git` para que Git usara las
 > credenciales de GitHub CLI.
 
 ## Mantenimiento
 
-- La base de datos está en **Neon** (plan gratuito, proyecto `tareas-semanales`, región Oregon). No caduca:
-  los datos se conservan indefinidamente. El cómputo se suspende tras unos minutos sin uso y se reactiva
-  solo en la siguiente consulta (menos de un segundo).
+- La base de datos está en **Neon** (plan gratuito, proyecto `tareas-semanales`, región **Frankfurt**,
+  `aws-eu-central-1`). No caduca: la rama `production` tiene `Expires: Never` y los datos se conservan
+  indefinidamente. El cómputo se suspende tras unos minutos sin uso y se reactiva solo en la siguiente
+  consulta (menos de un segundo).
 - El **servicio web gratuito de Render se duerme** tras unos minutos sin uso: la primera visita tarda
   ~1 minuto. El reinicio de los domingos no se ve afectado (se aplica en la siguiente visita).
 - `DATABASE_URL` se configura en el panel de Render (**Environment**), nunca en el repositorio.
